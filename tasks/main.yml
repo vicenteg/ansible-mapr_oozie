@@ -1,0 +1,44 @@
+---
+# tasks file for oozie
+- name: install oozie (Ubuntu)
+  apt: pkg={{ item }} state=present
+  with_items:
+    - mapr-oozie-{{oozie_version}}.{{oozie_build}}
+  when: ansible_distribution == 'Ubuntu' 
+  notify: reconfigure roles
+  environment: proxy_env
+
+- name: install oozie (RedHat)
+  yum: pkg={{ item }} state=present
+  with_items:
+    - mapr-oozie-{{oozie_version}}.{{oozie_build}}
+  when: ansible_distribution in ('CentOS','RedHat','Amazon')
+  notify: reconfigure roles
+  environment: proxy_env
+
+- name: update oozie-site.xml for impersonation (hosts)
+  hadoop_properties:
+    file: "/opt/mapr/oozie/oozie-{{oozie_version}}/conf/oozie-site.xml"
+    name: 'oozie.service.ProxyUserService.proxyuser.mapr.hosts'
+    value: '*'
+  register: proxyuser_hosts
+  notify: reconfigure roles
+
+- name: update oozie-site.xml for impersonation (groups)
+  hadoop_properties:
+    file: "/opt/mapr/oozie/oozie-{{oozie_version}}/conf/oozie-site.xml"
+    name: 'oozie.service.ProxyUserService.proxyuser.mapr.groups'
+    value: '*'
+  notify: reconfigure roles
+
+- name: ensure oozie/share/lib exists
+  file: state=directory path="/mapr/{{cluster_name}}/oozie/share/lib" mode=0755 owner=mapr group=mapr
+  notify: reconfigure roles
+
+- name: extract oozie examples
+  shell: tar zxf /opt/mapr/oozie/oozie-{{oozie_version}}/oozie-examples.tar.gz -C /mapr/{{cluster_name}}/oozie/share/lib
+  notify: reconfigure roles
+
+#- name: extract oozie shared libs
+#  shell: tar zxf /opt/mapr/oozie/oozie-{{oozie_version}}/oozie-sharelib*.tar.gz -C /mapr/{{cluster_name}}/oozie/share/lib
+#  notify: reconfigure roles

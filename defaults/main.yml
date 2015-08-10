@@ -1,0 +1,7 @@
+---
+# defaults file for oozie
+
+proxy_env: { }
+
+oozie_version: 4.1.0
+oozie_build: 201507061427-1
