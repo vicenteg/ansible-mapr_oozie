@@ -16,28 +16,63 @@
   notify: reconfigure roles
   environment: proxy_env
 
+- name: get zookeeper ensemble
+  sudo: yes
+  sudo_user: '{{mapr_admin_username}}'
+  command: maprcli node listzookeepers -noheader
+  register: zookeepers
+
+- name: update oozie.services.ext
+  hadoop_properties:
+    file: "/opt/mapr/oozie/oozie-{{oozie_version}}/conf/oozie-site.xml"
+    name: "oozie.services.ext"
+    value: "org.apache.oozie.service.ZKLocksService, org.apache.oozie.service.ZKXLogStreamingService, org.apache.oozie.service.ZKJobsConcurrencyService"
+  notify: restart oozie
+
+- name: update oozie with ZK info
+  hadoop_properties:
+    file: "/opt/mapr/oozie/oozie-{{oozie_version}}/conf/oozie-site.xml"
+    name: "oozie.zookeeper.connection.string"
+    value: "{{zookeepers.stdout|trim}}"
+  notify: restart oozie
+
+- name: update oozie namespace
+  hadoop_properties:
+    file: "/opt/mapr/oozie/oozie-{{oozie_version}}/conf/oozie-site.xml"
+    name: "oozie.zookeeper.namespace"
+    value: oozie
+  notify: restart oozie
+
 - name: update oozie-site.xml for impersonation (hosts)
   hadoop_properties:
     file: "/opt/mapr/oozie/oozie-{{oozie_version}}/conf/oozie-site.xml"
     name: 'oozie.service.ProxyUserService.proxyuser.mapr.hosts'
     value: '*'
   register: proxyuser_hosts
-  notify: reconfigure roles
+  notify: restart oozie
 
 - name: update oozie-site.xml for impersonation (groups)
   hadoop_properties:
     file: "/opt/mapr/oozie/oozie-{{oozie_version}}/conf/oozie-site.xml"
     name: 'oozie.service.ProxyUserService.proxyuser.mapr.groups'
     value: '*'
-  notify: reconfigure roles
+  notify: restart oozie
 
-- name: ensure oozie/share/lib exists
-  file: state=directory path="/mapr/{{cluster_name}}/oozie/share/lib" mode=0755 owner=mapr group=mapr
-  notify: reconfigure roles
+- name: create tmp destination for oozie examples
+  file: state=directory path="/tmp/oozie" mode=0755 owner=mapr group=mapr
 
 - name: extract oozie examples
-  shell: tar zxf /opt/mapr/oozie/oozie-{{oozie_version}}/oozie-examples.tar.gz -C /mapr/{{cluster_name}}/oozie/share/lib
-  notify: reconfigure roles
+  shell: tar zxf /opt/mapr/oozie/oozie-{{oozie_version}}/oozie-examples.tar.gz -C /tmp/oozie
+
+- name: create oozie/share/lib in dfs
+  sudo: yes
+  sudo_user: '{{mapr_admin_username}}'
+  command: hadoop fs -mkdir -p /oozie/share/lib/examples
+
+- name: copy oozie examples to cluster
+  sudo: yes
+  sudo_user: '{{mapr_admin_username}}'
+  command: hadoop fs -put -f /tmp/oozie/examples /oozie/share/lib
 
 #- name: extract oozie shared libs
 #  shell: tar zxf /opt/mapr/oozie/oozie-{{oozie_version}}/oozie-sharelib*.tar.gz -C /mapr/{{cluster_name}}/oozie/share/lib
