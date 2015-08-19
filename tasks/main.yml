@@ -69,10 +69,12 @@
   sudo_user: '{{mapr_admin_username}}'
   command: hadoop fs -mkdir -p /oozie/share/lib/examples
 
+- pause: seconds=10
+
 - name: copy oozie examples to cluster
   sudo: yes
   sudo_user: '{{mapr_admin_username}}'
-  command: hadoop fs -put -f /tmp/oozie/examples /oozie/share/lib
+  command: hadoop fs -copyFromLocal -f /tmp/oozie/examples /oozie/share/lib
 
 #- name: extract oozie shared libs
 #  shell: tar zxf /opt/mapr/oozie/oozie-{{oozie_version}}/oozie-sharelib*.tar.gz -C /mapr/{{cluster_name}}/oozie/share/lib
