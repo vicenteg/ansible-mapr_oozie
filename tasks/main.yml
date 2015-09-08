@@ -25,6 +25,7 @@
   sudo_user: '{{mapr_admin_username}}'
   command: maprcli node listzookeepers -noheader
   register: zookeepers
+  changed_when: false
 
 - name: update oozie.services.ext
   sudo: yes
