@@ -1,6 +1,8 @@
 ---
 # handlers file for oozie
 - name: reconfigure roles
+  sudo: yes
+  sudo_user: root
   command: /opt/mapr/server/configure.sh -R
 
 - name: restart oozie

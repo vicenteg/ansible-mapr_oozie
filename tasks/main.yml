@@ -1,6 +1,8 @@
 ---
 # tasks file for oozie
 - name: install oozie (Ubuntu)
+  sudo: yes
+  sudo_user: root
   apt: pkg={{ item }} state=present
   with_items:
     - mapr-oozie-{{oozie_version}}.{{oozie_build}}
@@ -9,6 +11,8 @@
   environment: proxy_env
 
 - name: install oozie (RedHat)
+  sudo: yes
+  sudo_user: root
   yum: pkg={{ item }} state=present
   with_items:
     - mapr-oozie-{{oozie_version}}.{{oozie_build}}
@@ -23,6 +27,8 @@
   register: zookeepers
 
 - name: update oozie.services.ext
+  sudo: yes
+  sudo_user: '{{mapr_admin_username}}'
   hadoop_properties:
     file: "/opt/mapr/oozie/oozie-{{oozie_version}}/conf/oozie-site.xml"
     name: "oozie.services.ext"
@@ -30,6 +36,8 @@
   notify: restart oozie
 
 - name: update oozie with ZK info
+  sudo: yes
+  sudo_user: '{{mapr_admin_username}}'
   hadoop_properties:
     file: "/opt/mapr/oozie/oozie-{{oozie_version}}/conf/oozie-site.xml"
     name: "oozie.zookeeper.connection.string"
@@ -37,6 +45,8 @@
   notify: restart oozie
 
 - name: update oozie namespace
+  sudo: yes
+  sudo_user: '{{mapr_admin_username}}'
   hadoop_properties:
     file: "/opt/mapr/oozie/oozie-{{oozie_version}}/conf/oozie-site.xml"
     name: "oozie.zookeeper.namespace"
@@ -44,6 +54,8 @@
   notify: restart oozie
 
 - name: update oozie-site.xml for impersonation (hosts)
+  sudo: yes
+  sudo_user: '{{mapr_admin_username}}'
   hadoop_properties:
     file: "/opt/mapr/oozie/oozie-{{oozie_version}}/conf/oozie-site.xml"
     name: 'oozie.service.ProxyUserService.proxyuser.mapr.hosts'
@@ -52,6 +64,8 @@
   notify: restart oozie
 
 - name: update oozie-site.xml for impersonation (groups)
+  sudo: yes
+  sudo_user: '{{mapr_admin_username}}'
   hadoop_properties:
     file: "/opt/mapr/oozie/oozie-{{oozie_version}}/conf/oozie-site.xml"
     name: 'oozie.service.ProxyUserService.proxyuser.mapr.groups'
@@ -59,9 +73,13 @@
   notify: restart oozie
 
 - name: create tmp destination for oozie examples
-  file: state=directory path="/tmp/oozie" mode=0755 owner=mapr group=mapr
+  sudo: yes
+  sudo_user: '{{mapr_admin_username}}'
+  file: state=directory path="/tmp/oozie" mode=0755
 
 - name: extract oozie examples
+  sudo: yes
+  sudo_user: '{{mapr_admin_username}}'
   shell: tar zxf /opt/mapr/oozie/oozie-{{oozie_version}}/oozie-examples.tar.gz -C /tmp/oozie
 
 - name: create oozie/share/lib in dfs
@@ -69,7 +87,7 @@
   sudo_user: '{{mapr_admin_username}}'
   command: hadoop fs -mkdir -p /oozie/share/lib/examples
 
-- pause: seconds=10
+- pause: seconds=20
 
 - name: copy oozie examples to cluster
   sudo: yes
