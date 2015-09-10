@@ -81,7 +81,7 @@
 - name: extract oozie examples
   sudo: yes
   sudo_user: '{{mapr_admin_username}}'
-  shell: tar zxf /opt/mapr/oozie/oozie-{{oozie_version}}/oozie-examples.tar.gz -C /tmp/oozie
+  unarchive: copy=no src=/opt/mapr/oozie/oozie-{{oozie_version}}/oozie-examples.tar.gz dest=/tmp/oozie
 
 - name: create oozie/share/lib in dfs
   sudo: yes
