@@ -1,15 +1,5 @@
 ---
 # tasks file for oozie
-- name: install oozie (Ubuntu)
-  sudo: yes
-  sudo_user: root
-  apt: pkg={{ item }} state=present
-  with_items:
-    - mapr-oozie-{{oozie_version}}.{{oozie_build}}
-  when: ansible_distribution == 'Ubuntu' 
-  notify: reconfigure roles
-  environment: proxy_env
-
 - name: install oozie (RedHat)
   sudo: yes
   sudo_user: root
@@ -94,7 +84,3 @@
   sudo: yes
   sudo_user: '{{mapr_admin_username}}'
   command: hadoop fs -copyFromLocal -f /tmp/oozie/examples /oozie/share/lib
-
-#- name: extract oozie shared libs
-#  shell: tar zxf /opt/mapr/oozie/oozie-{{oozie_version}}/oozie-sharelib*.tar.gz -C /mapr/{{cluster_name}}/oozie/share/lib
-#  notify: reconfigure roles
