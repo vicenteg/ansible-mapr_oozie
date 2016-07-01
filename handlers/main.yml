@@ -1,11 +1,11 @@
 ---
 # handlers file for oozie
 - name: reconfigure roles
-  sudo: yes
-  sudo_user: root
+  become: yes
+  become_user: root
   command: /opt/mapr/server/configure.sh -R
 
 - name: restart oozie
-  sudo: yes
-  sudo_user: '{{mapr_admin_username}}'
+  become: yes
+  become_user: '{{mapr_admin_username}}'
   command: maprcli node services -action restart -name oozie -filter csvc==oozie
