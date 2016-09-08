@@ -8,7 +8,6 @@
     - mapr-oozie-{{oozie_version}}.{{oozie_build}}
   when: ansible_distribution in ('CentOS','RedHat','Amazon')
   notify: reconfigure roles
-  environment: '{{proxy_env}}'
 
 - name: get zookeeper ensemble
   become: yes
